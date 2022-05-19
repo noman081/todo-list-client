@@ -1,15 +1,25 @@
 import React from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useForm } from "react-hook-form";
 import { toast } from 'react-toastify';
+import auth from '../../firebase.init';
+import Loading from '../Shared/Loading';
 
 const AddTodo = () => {
     const { register, formState: { errors }, handleSubmit, reset } = useForm();
+    const [user, loading] = useAuthState(auth);
+    if (loading) {
+        return <Loading />
+    }
+    const email = user.email;
     const onSubmit = data => {
         const task = {
+            email: email,
+            isComplete: false,
             taskName: data.taskName,
             description: data.description
         }
-        fetch('http://localhost:5000/todo', {
+        fetch('https://todo-noman.herokuapp.com/todo', {
             method: 'POST',
             headers: {
                 'content-type': 'application/json'
@@ -17,11 +27,9 @@ const AddTodo = () => {
             body: JSON.stringify(task)
         }).then(res => res.json())
             .then(result => {
-                console.log(result);
                 toast.success('Task added successfully');
                 reset();
             })
-        console.log(data);
     };
     return (
         <div className='container'>
